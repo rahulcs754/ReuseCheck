@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`markdownReport > renders a table with links and reasons 1`] = `
+"<!-- reusecheck -->
+### 🔁 ReuseCheck: 1 new function looks like code you already have
+
+Before adding a second copy, check if the existing one can be reused or extended.
+
+| New in this PR | Looks like | Match | Why |
+|---|---|---|---|
+| \`useCurrentValue\` (hook)<br>\`src/search/useDebouncedValue.js:1\` | \`useDebounce\`<br>\`src/hooks/useDebounce.js:1\` | **100%** | Same code after renaming; both use \`clearTimeout\`, \`setTimeout\`, \`useEffect\`, \`useState\` |
+
+<sub>Checked 1 new or changed function. Threshold 80%. Not a real duplicate? Raise \`threshold\` or add the path to \`ignore\` in \`.reusecheck.json\`.</sub>"
+`;

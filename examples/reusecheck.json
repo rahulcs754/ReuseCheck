@@ -1,0 +1,6 @@
+{
+  "threshold": 0.8,
+  "minTokens": 30,
+  "ignore": ["src/legacy/**"],
+  "includeTests": false
+}
