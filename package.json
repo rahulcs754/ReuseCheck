@@ -1,0 +1,27 @@
+{
+  "name": "reusecheck",
+  "version": "0.1.0",
+  "description": "Find new functions, hooks and components in a PR that duplicate code you already have.",
+  "type": "module",
+  "license": "MIT",
+  "bin": { "reusecheck": "dist/cli.js" },
+  "files": ["dist"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "tsx src/cli.ts"
+  },
+  "devDependencies": {
+    "@babel/parser": "^7.28.0",
+    "@babel/types": "^7.28.0",
+    "@types/node": "^22.10.0",
+    "picomatch": "^4.0.2",
+    "@types/picomatch": "^4.0.0",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}
