@@ -1,0 +1,61 @@
+name: ReuseCheck
+description: Flag new functions, hooks and components in a PR that duplicate code already in the repo, even after renaming.
+author: rahulcs754
+branding:
+  icon: copy
+  color: purple
+
+inputs:
+  base:
+    description: Git ref to compare against. Default is origin/<PR base branch>.
+    required: false
+  threshold:
+    description: Report matches at or above this score (0-1 or 1-100). Default 0.8, or the value in .reusecheck.json.
+    required: false
+  comment:
+    description: Post or update one PR comment with the report.
+    required: false
+    default: 'true'
+  comment-on:
+    description: When to post a new comment. "duplicate" (only when something is found) or "always".
+    required: false
+    default: duplicate
+  fail-on-duplicate:
+    description: Fail the check when a duplicate is found.
+    required: false
+    default: 'false'
+  include-tests:
+    description: Also check test and story files.
+    required: false
+    default: 'false'
+  working-directory:
+    description: Folder to run in.
+    required: false
+    default: '.'
+  github-token:
+    description: Token used to post the comment.
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Run ReuseCheck
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        RC_BASE: ${{ inputs.base }}
+        RC_THRESHOLD: ${{ inputs.threshold }}
+        RC_COMMENT: ${{ inputs.comment }}
+        RC_COMMENT_ON: ${{ inputs.comment-on }}
+        RC_FAIL: ${{ inputs.fail-on-duplicate }}
+        RC_TESTS: ${{ inputs.include-tests }}
+      run: |
+        args=()
+        [ -n "$RC_BASE" ] && args+=(--base "$RC_BASE")
+        [ -n "$RC_THRESHOLD" ] && args+=(--threshold "$RC_THRESHOLD")
+        [ "$RC_COMMENT" = "true" ] && args+=(--comment --comment-on "$RC_COMMENT_ON")
+        [ "$RC_FAIL" = "true" ] && args+=(--fail-on-duplicate)
+        [ "$RC_TESTS" = "true" ] && args+=(--include-tests)
+        node "$GITHUB_ACTION_PATH/dist/cli.js" "${args[@]}"

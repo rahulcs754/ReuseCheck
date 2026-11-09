@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReuseCheck</title>
+<meta name="description" content="A GitHub Action that flags new functions, hooks and components that duplicate code already in your repo.">
+<style>
+  :root {
+    --bg: #f7f9fb; --fg: #16202a; --muted: #5b6875; --card: #ffffff; --line: #dfe5ea;
+    --accent: #1f5fbf; --accent-soft: #e4ecf9; --bad: #b42318; --bad-soft: #fdecea; --ok: #1d7a4f; --ok-soft: #e6f4ec;
+    --warn: #a15c00; --warn-soft: #fcf1df; --code: #eef2f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10161c; --fg: #e5ebf0; --muted: #9ba8b4; --card: #18212a; --line: #2a3541;
+      --accent: #7fb0ff; --accent-soft: #1b2b44; --bad: #ff8a80; --bad-soft: #3a1c1a; --ok: #6fd3a0; --ok-soft: #15301f;
+      --warn: #f3b562; --warn-soft: #33270f; --code: #222c36;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.02em; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; }
+  p.lead { font-size: 1.15rem; color: var(--muted); margin: 0 0 24px; max-width: 660px; }
+  a { color: var(--accent); }
+  .tag { display: inline-block; font-size: .8rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 2px 10px; border-radius: 99px; margin-bottom: 16px; }
+  .btns { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none; font-weight: 600; border: 1px solid var(--line); color: var(--fg); background: var(--card); cursor: pointer; font-size: 1rem; }
+  .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 1rem; }
+  .card p { margin: 0; color: var(--muted); font-size: .95rem; }
+  code, pre, textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85rem; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x: auto; margin: 8px 0 0; }
+  pre code { background: none; padding: 0; }
+  .try { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .try { grid-template-columns: 1fr; } }
+  label { font-weight: 600; font-size: .9rem; display: block; margin-bottom: 4px; }
+  textarea { width: 100%; min-height: 260px; background: var(--card); color: var(--fg); border: 1px solid var(--line); border-radius: 10px; padding: 10px; resize: vertical; }
+  .comment { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-top: 16px; }
+  .comment .head { padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+  .comment .body { padding: 16px; }
+  .comment h4 { margin: 0 0 8px; font-size: 1.1rem; }
+  .table-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.v { width: 2rem; }
+    tr.hit { background: var(--warn-soft); }
+  .score { font-weight: 700; white-space: nowrap; }
+  @media (max-width: 600px) {
+    thead { display: none; }
+    tr { display: block; border-bottom: 1px solid var(--line); padding: 8px 0; }
+    td { display: block; border: 0; padding: 2px 10px; }
+    td.v { width: auto; }
+  }
+  .small { color: var(--muted); font-size: .85rem; margin-top: 8px; }
+  ol.steps { padding-left: 20px; }
+  ol.steps li { margin-bottom: 18px; }
+  footer { margin-top: 56px; color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+  <span class="tag">GitHub Action · CLI · Free and open source</span>
+  <h1>Stop rewriting code you already have.</h1>
+  <p class="lead">AI agents rarely search the repo before they write. ReuseCheck looks at the new functions, hooks and components in each PR and tells you when one already exists, even when the names and the line order changed.</p>
+  <div class="btns">
+    <a class="btn primary" href="https://github.com/rahulcs754/reusecheck#how-to-use-it">Add to your repo</a>
+    <a class="btn" href="#try">Try it here</a>
+    <a class="btn" href="https://github.com/rahulcs754/reusecheck">View on GitHub</a>
+  </div>
+
+  <h2>Why</h2>
+  <div class="grid">
+    <div class="card"><h3>Agents duplicate quietly</h3><p>A second <code>useDebounce</code>, a third <code>formatDate</code>. Each one looks fine in review, because the original lives in a file the PR did not touch.</p></div>
+    <div class="card"><h3>Copy-paste tools miss rewrites</h3><p>jscpd and similar tools match token runs. New names and reordered lines slip past them. ReuseCheck compares structure after renaming.</p></div>
+    <div class="card"><h3>Only new code is checked</h3><p>Old duplicates don't spam every PR. You see matches for what this PR adds, in one comment that updates on each push.</p></div>
+    <div class="card"><h3>No AI, no server</h3><p>An AST parser and plain math. Fast, free, the same answer every time, and your code never leaves CI.</p></div>
+  </div>
+
+  <h2 id="try">Try it</h2>
+  <p>Paste new code on the left and existing code on the right. Everything runs in your browser.</p>
+  <div class="try">
+    <div><label for="a">New code (from the PR)</label><textarea id="a" spellcheck="false">import { useEffect, useState } from 'react';
+
+// Written by an agent for the search box.
+export const useDebouncedValue = (input, wait = 300) =&gt; {
+  const [current, setCurrent] = useState(input);
+  useEffect(() =&gt; {
+    const handle = setTimeout(() =&gt; setCurrent(input), wait);
+    return () =&gt; clearTimeout(handle);
+  }, [input, wait]);
+  return current;
+};</textarea></div>
+    <div><label for="b">Existing code (in the repo)</label><textarea id="b" spellcheck="false">import { useEffect, useState } from 'react';
+
+/** Already in src/hooks/useDebounce.ts */
+export function useDebounce(value, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() =&gt; {
+    const timer = setTimeout(() =&gt; {
+      setDebounced(value);
+    }, delay);
+    return () =&gt; {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return debounced;
+}
+
+export function isWeekend(date) {
+  const d = date.getDay();
+  return d === 0 || d === 6;
+}</textarea></div>
+  </div>
+  <p><button class="btn primary" id="run">Compare</button></p>
+  <div class="comment" aria-live="polite">
+    <div class="head">ReuseCheck result</div>
+    <div class="body" id="out"><p class="small">Press Compare.</p></div>
+  </div>
+
+  <h2>How it works</h2>
+  <ol class="steps">
+    <li><strong>Parse.</strong> Every JS/TS/JSX file is parsed into an AST with Babel. Functions, arrow functions, methods, hooks and components become units.</li>
+    <li><strong>Normalize.</strong> Local names become <code>$</code>, strings and numbers become their type, types and comments are dropped, and <code>() =&gt; x</code> equals <code>() =&gt; { return x; }</code>. The APIs a unit uses (<code>useState</code>, <code>fetch</code>, <code>.map</code>, <code>&lt;button&gt;</code>) are kept.</li>
+    <li><strong>Score.</strong> 70% structure (ordered token runs plus an order-free token count) and 30% shared APIs. 80% or more is reported.</li>
+    <li><strong>Compare only what's new.</strong> In a PR, a unit is new when most of its lines were added. Each new unit is compared with every other unit in the repo.</li>
+  </ol>
+
+  <h2>Add it to a repo</h2>
+<pre><code>name: ReuseCheck
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  reusecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: rahulcs754/reusecheck@main</code></pre>
+  <p class="small">Or run it locally: <code>npx github:rahulcs754/reusecheck --base origin/main</code>, or scan the whole repo with <code>npx github:rahulcs754/reusecheck scan</code>.</p>
+
+  <footer>MIT licensed · <a href="https://github.com/rahulcs754/reusecheck">github.com/rahulcs754/reusecheck</a></footer>
+</main>
+<script src="reusecheck.js"></script>
+<script>
+  const out = document.getElementById('out');
+  const pct = (x) => Math.round(x * 100) + '%';
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  function run() {
+    const res = ReuseCheck.compareSnippets(document.getElementById('a').value, document.getElementById('b').value);
+    if (res.error) { out.innerHTML = '<p>' + esc(res.error) + '</p>'; return; }
+    const hits = res.pairs.filter((p) => p.score >= 0.8);
+    const title = hits.length
+      ? '🔁 ' + hits.length + ' new function' + (hits.length === 1 ? '' : 's') + ' look' + (hits.length === 1 ? 's' : '') + ' like existing code'
+      : '✅ No duplicates at 80% or more';
+    const rows = res.pairs.slice(0, 8).map((p) =>
+      '<tr class="' + (p.score >= 0.8 ? 'hit' : '') + '"><td><code>' + esc(p.a) + '</code></td><td><code>' + esc(p.b) +
+      '</code></td><td class="score">' + pct(p.score) + '</td><td>' + esc(p.why) + '</td></tr>').join('');
+    out.innerHTML = '<h4>' + title + '</h4><div class="table-wrap"><table><thead><tr><th>New</th><th>Existing</th><th>Match</th><th>Why</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+  document.getElementById('run').addEventListener('click', run);
+  run();
+</script>
+</body>
+</html>
